@@ -65,7 +65,6 @@ const NAV_SECTIONS: NavSection[] = [
   {
     title: 'Dispatch Execution',
     items: [
-      { label: 'Loading Checklist', icon: <ChecklistRtl />, path: '/loading-checklist/placeholder' },
       { label: 'Shipment Readiness', icon: <AssignmentTurnedIn />, path: '/shipment-readiness' },
       { label: 'Exceptions', icon: <Warning />, path: '/exceptions' },
     ],

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box, Typography, Card, CardContent, Chip, Button,
   CircularProgress, LinearProgress, Avatar,
@@ -7,26 +7,7 @@ import {
   HourglassTop, CheckCircle, Cancel, Schedule,
 } from '@mui/icons-material';
 
-const MOCK_APPROVALS = [
-  {
-    id: 1, warehouse: 'Mumbai Central Hub', warehouseInitial: 'M',
-    status: 'AWAITING_REVIEW', requestedChanges: null,
-    estimatedAcceptDate: '2025-06-16', draftNumber: 'DS-2025-001',
-    submittedDate: '2025-06-13', progress: 30,
-  },
-  {
-    id: 2, warehouse: 'Delhi Distribution Center', warehouseInitial: 'D',
-    status: 'APPROVED', requestedChanges: null,
-    estimatedAcceptDate: '2025-06-14', draftNumber: 'DS-2025-002',
-    submittedDate: '2025-06-12', progress: 100,
-  },
-  {
-    id: 3, warehouse: 'Bangalore Warehouse', warehouseInitial: 'B',
-    status: 'REJECTED', requestedChanges: 'Warehouse at capacity. Reschedule to next week.',
-    estimatedAcceptDate: null, draftNumber: 'DS-2025-003',
-    submittedDate: '2025-06-11', progress: 100,
-  },
-];
+import { shipmentsApi } from '../api/endpoints';
 
 const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string; icon: React.ReactNode }> = {
   AWAITING_REVIEW: { label: 'Under Review', bg: '#FEF3C7', color: '#D97706', icon: <HourglassTop /> },
@@ -35,7 +16,20 @@ const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string; 
 };
 
 export default function PendingApprovalsPage() {
-  const [approvals] = useState(MOCK_APPROVALS);
+  const [approvals, setApprovals] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Assuming status CREATED or PENDING means awaiting review
+    shipmentsApi.list()
+      .then(res => {
+        const allShipments = res.data.results || res.data || [];
+        const pending = allShipments.filter((s: any) => s.status === 'CREATED' || s.status === 'PENDING');
+        setApprovals(pending);
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
 
   return (
     <Box>
@@ -49,7 +43,11 @@ export default function PendingApprovalsPage() {
       </Box>
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        {approvals.map(approval => {
+        {loading ? (
+          <Box display="flex" justifyContent="center" p={5}><CircularProgress /></Box>
+        ) : approvals.length === 0 ? (
+          <Typography variant="body2" sx={{ py: 4, textAlign: 'center', color: '#8A7F75' }}>No pending approvals found.</Typography>
+        ) : approvals.map(approval => {
           const st = STATUS_CONFIG[approval.status] || STATUS_CONFIG.AWAITING_REVIEW;
           return (
             <Card key={approval.id}>
@@ -58,14 +56,14 @@ export default function PendingApprovalsPage() {
                   <Avatar sx={{
                     width: 48, height: 48, bgcolor: st.bg, color: st.color, fontWeight: 700
                   }}>
-                    {approval.warehouseInitial}
+                    {(approval.warehouse_name || 'W').charAt(0).toUpperCase()}
                   </Avatar>
                   <Box sx={{ flex: 1 }}>
                     <Typography sx={{ fontWeight: 700, color: '#332922', fontSize: '1rem' }}>
-                      {approval.warehouse}
+                      {approval.warehouse_name || 'Unknown Warehouse'}
                     </Typography>
                     <Typography variant="caption" sx={{ color: '#8A7F75' }}>
-                      Draft: {approval.draftNumber} · Submitted: {approval.submittedDate}
+                      Shipment: {approval.shipment_number} · Created: {new Date(approval.created_at).toLocaleDateString()}
                     </Typography>
                   </Box>
                   <Chip
@@ -74,36 +72,6 @@ export default function PendingApprovalsPage() {
                     sx={{ fontWeight: 700, borderRadius: '8px', bgcolor: st.bg, color: st.color }}
                   />
                 </Box>
-
-                {approval.status === 'AWAITING_REVIEW' && (
-                  <Box sx={{ mt: 2 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                      <Typography variant="caption" sx={{ color: '#8A7F75' }}>Review Progress</Typography>
-                      <Typography variant="caption" sx={{ color: '#8A7F75', display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <Schedule sx={{ fontSize: 14 }} /> Est. {approval.estimatedAcceptDate}
-                      </Typography>
-                    </Box>
-                    <LinearProgress
-                      variant="determinate"
-                      value={approval.progress}
-                      sx={{
-                        height: 6, borderRadius: 3, bgcolor: 'rgba(0,0,0,0.06)',
-                        '& .MuiLinearProgress-bar': { bgcolor: '#F97316', borderRadius: 3 },
-                      }}
-                    />
-                  </Box>
-                )}
-
-                {approval.requestedChanges && (
-                  <Box sx={{ mt: 2, p: 2, bgcolor: '#FEF2F2', borderRadius: '10px', border: '1px solid #FECACA' }}>
-                    <Typography variant="body2" sx={{ color: '#DC2626', fontWeight: 600 }}>
-                      Warehouse Feedback:
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: '#7F1D1D', mt: 0.5 }}>
-                      {approval.requestedChanges}
-                    </Typography>
-                  </Box>
-                )}
               </CardContent>
             </Card>
           );

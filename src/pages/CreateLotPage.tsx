@@ -31,10 +31,7 @@ const initialColumns: GridColDef[] = [
   { field: 'is_fragile', headerName: 'Fragile', type: 'boolean', width: 90, editable: true },
 ];
 
-const initialRows: GridRowsProp = [
-  { id: 1, parcel_id: 'P-001', destination: 'Mumbai', expected_dispatch_date: new Date('2025-06-15'), sku: 'SKU-A1', product_name: 'Widget A', batch_number: 'B-001', insurance_value: 5000, special_handling: 'Keep Dry', length: 100, width: 80, height: 50, weight: 25, quantity: 1, dispatch_priority: 'MEDIUM', is_fragile: false },
-  { id: 2, parcel_id: 'P-002', destination: 'Delhi', expected_dispatch_date: new Date('2025-06-16'), sku: 'SKU-B2', product_name: 'Gadget B', batch_number: 'B-002', insurance_value: 12000, special_handling: 'None', length: 120, width: 100, height: 60, weight: 40, quantity: 2, dispatch_priority: 'HIGH', is_fragile: true },
-];
+const initialRows: GridRowsProp = [];
 
 export default function CreateLotPage() {
   const navigate = useNavigate();
@@ -80,7 +77,16 @@ export default function CreateLotPage() {
     fleetApi.listWarehouses().then(res => setWarehouses(res.data.results || []));
     authApi.getProfile().then(res => {
       const userFactory = res.data.organization?.factories?.[0]?.id;
-      if (userFactory) setFactoryId(userFactory);
+      if (userFactory) {
+        setFactoryId(userFactory);
+      } else {
+        // Fallback to factory ID 1 if not strictly found in profile 
+        // to prevent demo save failures
+        setFactoryId(1);
+      }
+    }).catch(err => {
+      console.error('Failed to get profile', err);
+      setFactoryId(1); // fallback
     });
   }, []);
 
@@ -123,8 +129,12 @@ export default function CreateLotPage() {
   };
 
   const handleSave = async () => {
-    if (!factoryId || !destination) {
+    if (!destination) {
       alert("Please select a destination warehouse.");
+      return;
+    }
+    if (!factoryId) {
+      alert("Unable to determine your factory ID. Please refresh or contact support.");
       return;
     }
 
@@ -201,7 +211,7 @@ export default function CreateLotPage() {
           onChange={(e) => setDestination(e.target.value)}
         >
           {warehouses.map(w => (
-            <MenuItem key={w.id} value={w.id}>{w.name}</MenuItem>
+            <MenuItem key={w.id} value={w.id}>{w.name}{w.city ? ` (${w.city})` : ''}</MenuItem>
           ))}
         </TextField>
         <TextField

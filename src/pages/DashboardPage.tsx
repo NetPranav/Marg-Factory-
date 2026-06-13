@@ -15,12 +15,12 @@ import { dashboardApi, shipmentsApi } from '@/api/endpoints';
 import { STATUS_COLORS } from '@/theme/statusColors';
 
 const METRIC_CARDS = [
-  { key: 'ready_dispatch', label: 'READY FOR DISPATCH', icon: <CheckCircle sx={{ color: '#22C55E' }} />, bg: '#F0FDF4', trend: '3', mockVal: 12 },
-  { key: 'awaiting_approval', label: 'AWAITING APPROVAL', icon: <HourglassTop sx={{ color: '#F59E0B' }} />, bg: '#FFF7ED', trend: '1', mockVal: 5 },
-  { key: 'scheduled_today', label: 'SCHEDULED TODAY', icon: <CalendarToday sx={{ color: '#3B82F6' }} />, bg: '#EFF6FF', trend: '2', mockVal: 8 },
-  { key: 'critical_exceptions', label: 'CRITICAL EXCEPTIONS', icon: <Warning sx={{ color: '#EF4444' }} />, bg: '#FEF2F2', trend: '-1', mockVal: 2 },
-  { key: 'unread_conversations', label: 'UNREAD CONVERSATIONS', icon: <Forum sx={{ color: '#8B5CF6' }} />, bg: '#F5F3FF', trend: '5', mockVal: 14 },
-  { key: 'warehouse_alerts', label: 'WAREHOUSE ALERTS', icon: <NotificationImportant sx={{ color: '#EAB308' }} />, bg: '#FEF9C3', trend: '0', mockVal: 3 },
+  { key: 'ready_dispatch', label: 'READY FOR DISPATCH', icon: <CheckCircle sx={{ color: '#22C55E' }} />, bg: '#F0FDF4', trend: '—' },
+  { key: 'awaiting_approval', label: 'AWAITING APPROVAL', icon: <HourglassTop sx={{ color: '#F59E0B' }} />, bg: '#FFF7ED', trend: '—' },
+  { key: 'scheduled_today', label: 'SCHEDULED TODAY', icon: <CalendarToday sx={{ color: '#3B82F6' }} />, bg: '#EFF6FF', trend: '—' },
+  { key: 'critical_exceptions', label: 'CRITICAL EXCEPTIONS', icon: <Warning sx={{ color: '#EF4444' }} />, bg: '#FEF2F2', trend: '—' },
+  { key: 'unread_conversations', label: 'UNREAD CONVERSATIONS', icon: <Forum sx={{ color: '#8B5CF6' }} />, bg: '#F5F3FF', trend: '—' },
+  { key: 'warehouse_alerts', label: 'WAREHOUSE ALERTS', icon: <NotificationImportant sx={{ color: '#EAB308' }} />, bg: '#FEF9C3', trend: '—' },
 ];
 
 const QUICK_ACTIONS = [
@@ -31,12 +31,12 @@ const QUICK_ACTIONS = [
 ];
 
 const WORKFLOW_STATUS = [
-  { label: 'Draft Lots', count: 4, path: '/lots', bg: '#FFF7ED', color: '#EA580C', icon: <Assignment sx={{ fontSize: 20 }} /> },
-  { label: 'Awaiting Warehouse', count: 2, path: '/pending-approvals', bg: '#FEF3C7', color: '#D97706', icon: <HourglassTop sx={{ fontSize: 20 }} /> },
-  { label: 'Awaiting Logistics', count: 1, path: '/quotations', bg: '#DBEAFE', color: '#2563EB', icon: <Storefront sx={{ fontSize: 20 }} /> },
-  { label: 'Ready For Dispatch', count: 3, path: '/shipments', bg: '#F0FDF4', color: '#16A34A', icon: <FactCheck sx={{ fontSize: 20 }} /> },
-  { label: 'Active Shipments', count: 7, path: '/shipments', bg: '#EFF6FF', color: '#3B82F6', icon: <LocalShipping sx={{ fontSize: 20 }} /> },
-  { label: 'Completed', count: 12, path: '/completed-shipments', bg: '#D1FAE5', color: '#059669', icon: <DoneAll sx={{ fontSize: 20 }} /> },
+  { label: 'Draft Lots', count: 0, path: '/lots', bg: '#FFF7ED', color: '#EA580C', icon: <Assignment sx={{ fontSize: 20 }} /> },
+  { label: 'Awaiting Warehouse', count: 0, path: '/pending-approvals', bg: '#FEF3C7', color: '#D97706', icon: <HourglassTop sx={{ fontSize: 20 }} /> },
+  { label: 'Awaiting Logistics', count: 0, path: '/quotations', bg: '#DBEAFE', color: '#2563EB', icon: <Storefront sx={{ fontSize: 20 }} /> },
+  { label: 'Ready For Dispatch', count: 0, path: '/shipments', bg: '#F0FDF4', color: '#16A34A', icon: <FactCheck sx={{ fontSize: 20 }} /> },
+  { label: 'Active Shipments', count: 0, path: '/shipments', bg: '#EFF6FF', color: '#3B82F6', icon: <LocalShipping sx={{ fontSize: 20 }} /> },
+  { label: 'Completed', count: 0, path: '/completed-shipments', bg: '#D1FAE5', color: '#059669', icon: <DoneAll sx={{ fontSize: 20 }} /> },
 ];
 
 const PIE_COLORS = ['#F97316', '#3B82F6', '#22C55E', '#EF4444', '#8B5CF6', '#6B7280'];
@@ -72,11 +72,8 @@ export default function DashboardPage() {
     { name: 'At Warehouse', value: transit.shipments?.at_warehouse ?? 0 },
   ].filter(d => d.value > 0) : [];
 
-  // Mock trend data (last 7 days)
-  const trendData = Array.from({ length: 7 }, (_, i) => ({
-    day: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i],
-    shipments: Math.floor(Math.random() * 10) + 2,
-  }));
+  // Trend data — empty until real historical data is available
+  const trendData: any[] = [];
 
   return (
     <Box>
@@ -155,7 +152,7 @@ export default function DashboardPage() {
                       <Skeleton width={40} height={36} />
                     ) : (
                       <Typography variant="h4" sx={{ fontWeight: 800, color: '#332922', lineHeight: 1 }}>
-                        {dash[m.key] ?? m.mockVal}
+                        {dash[m.key] ?? 0}
                       </Typography>
                     )}
                     <Chip 

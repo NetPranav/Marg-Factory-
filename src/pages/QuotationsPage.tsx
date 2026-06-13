@@ -29,23 +29,28 @@ export default function QuotationsPage() {
   // Flatten all quotes from all chat rooms
   const allQuotes = rooms.flatMap(room =>
     (room.quotes || []).map((q: any) => {
-      // Mock estimations
-      const estPrice = 15000 + Math.random() * 5000;
       const priceVal = Number(q.price);
-      let rateStatus = 'WITHIN'; // WITHIN, BELOW, ABOVE
-      let rateColor = '#CA8A04'; // Yellow
-      let rateBg = '#FEF9C3';
+      let rateStatus = 'MARKET RANGE'; // Default if no estimate exists
+      let rateColor = '#8A7F75'; 
+      let rateBg = '#F3F4F6';
       
-      if (priceVal < estPrice * 0.9) {
-        rateStatus = 'BELOW MARKET';
-        rateColor = '#16A34A'; // Green
-        rateBg = '#F0FDF4';
-      } else if (priceVal > estPrice * 1.1) {
-        rateStatus = 'ABOVE MARKET';
-        rateColor = '#DC2626'; // Red
-        rateBg = '#FEF2F2';
-      } else {
-        rateStatus = 'MARKET RANGE';
+      // If backend later provides an estimated_price, we can calculate against it
+      const estPrice = q.estimated_price ? Number(q.estimated_price) : null;
+      
+      if (estPrice) {
+        if (priceVal < estPrice * 0.9) {
+          rateStatus = 'BELOW MARKET';
+          rateColor = '#16A34A'; // Green
+          rateBg = '#F0FDF4';
+        } else if (priceVal > estPrice * 1.1) {
+          rateStatus = 'ABOVE MARKET';
+          rateColor = '#DC2626'; // Red
+          rateBg = '#FEF2F2';
+        } else {
+          rateStatus = 'MARKET RANGE';
+          rateColor = '#CA8A04'; // Yellow
+          rateBg = '#FEF9C3';
+        }
       }
 
       return {
@@ -57,9 +62,9 @@ export default function QuotationsPage() {
         rateStatus,
         rateColor,
         rateBg,
-        estVehicle: '20ft Container',
-        estDistance: '1,250 km',
-        estFuel: '₹8,500'
+        estVehicle: q.estimated_vehicle || 'N/A',
+        estDistance: q.estimated_distance || 'N/A',
+        estFuel: q.estimated_fuel || 'N/A'
       };
     })
   );
@@ -164,7 +169,7 @@ export default function QuotationsPage() {
                       <Grid container spacing={1}>
                         <Grid size={6}>
                           <Typography variant="caption" sx={{ color: '#B0A89E', display: 'block' }}>Market Rate</Typography>
-                          <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, color: '#332922' }}>₹ {Math.round(quote.estPrice).toLocaleString()}</Typography>
+                          <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, color: '#332922' }}>{quote.estPrice ? `₹ ${Math.round(quote.estPrice).toLocaleString()}` : 'N/A'}</Typography>
                         </Grid>
                         <Grid size={6}>
                           <Typography variant="caption" sx={{ color: '#B0A89E', display: 'block' }}>Vehicle</Typography>

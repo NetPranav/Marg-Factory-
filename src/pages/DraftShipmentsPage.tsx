@@ -11,7 +11,7 @@ import {
   Business
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { lotsApi } from '../api/endpoints';
+import { lotsApi, fleetApi } from '../api/endpoints';
 
 interface DraftGroup {
   id: string;
@@ -22,11 +22,6 @@ interface DraftGroup {
   recommendation: string;
 }
 
-const MOCK_WAREHOUSES = [
-  { id: 'WH-01', name: 'Mumbai Central Hub', city: 'Mumbai', utilization: 85, available: 1500, occupied: 8500, docks: 2, delay: '4 hours', incoming: 12 },
-  { id: 'WH-02', name: 'Delhi North Hub', city: 'Delhi', utilization: 45, available: 5500, occupied: 4500, docks: 8, delay: 'No delay', incoming: 3 },
-  { id: 'WH-03', name: 'Bangalore South Hub', city: 'Bangalore', utilization: 92, available: 800, occupied: 9200, docks: 0, delay: '24 hours', incoming: 18 },
-];
 
 export default function DraftShipmentsPage() {
   const navigate = useNavigate();
@@ -38,6 +33,8 @@ export default function DraftShipmentsPage() {
   const [warehouseDialogOpen, setWarehouseDialogOpen] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<DraftGroup | null>(null);
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<string>('');
+  const [warehouses, setWarehouses] = useState<any[]>([]);
+  const [whLoading, setWhLoading] = useState(false);
 
   useEffect(() => {
     lotsApi.list()
@@ -82,6 +79,11 @@ export default function DraftShipmentsPage() {
     setSelectedGroup(group);
     setSelectedWarehouseId('');
     setWarehouseDialogOpen(true);
+    setWhLoading(true);
+    fleetApi.listWarehouses()
+      .then(res => setWarehouses(res.data.results || res.data || []))
+      .catch(console.error)
+      .finally(() => setWhLoading(false));
   };
 
   const handleCreateDraft = () => {
@@ -260,15 +262,16 @@ export default function DraftShipmentsPage() {
           </Typography>
           
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {MOCK_WAREHOUSES.map(wh => {
-              const isSelected = selectedWarehouseId === wh.id;
-              const statusColor = wh.utilization >= 90 ? '#EF4444' : wh.utilization >= 70 ? '#F59E0B' : '#22C55E';
-              const bgStatus = wh.utilization >= 90 ? '#FEF2F2' : wh.utilization >= 70 ? '#FFF7ED' : '#F0FDF4';
-
+            {whLoading ? (
+              <Box display="flex" justifyContent="center" p={5}><CircularProgress /></Box>
+            ) : warehouses.length === 0 ? (
+              <Typography variant="body2" sx={{ py: 4, textAlign: 'center', color: '#8A7F75' }}>No warehouses found in the registry.</Typography>
+            ) : warehouses.map(wh => {
+              const isSelected = selectedWarehouseId === String(wh.id);
               return (
                 <Card 
                   key={wh.id}
-                  onClick={() => setSelectedWarehouseId(wh.id)}
+                  onClick={() => setSelectedWarehouseId(String(wh.id))}
                   sx={{ 
                     cursor: 'pointer',
                     border: isSelected ? '2px solid #F97316' : '2px solid transparent',
@@ -278,53 +281,30 @@ export default function DraftShipmentsPage() {
                   }}
                 >
                   <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                         <Checkbox checked={isSelected} sx={{ color: '#F97316', '&.Mui-checked': { color: '#F97316' }, p: 0 }} />
                         <Box>
                           <Typography sx={{ fontWeight: 800, color: '#332922' }}>{wh.name}</Typography>
                           <Typography variant="caption" sx={{ color: '#8A7F75', display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                            <Business sx={{ fontSize: 14 }} /> {wh.city}
+                            <Business sx={{ fontSize: 14 }} /> {wh.city || 'N/A'}, {wh.state || ''}
                           </Typography>
                         </Box>
                       </Box>
-                      <Chip 
-                        label={`${wh.utilization}% Full`} 
-                        size="small" 
-                        sx={{ fontWeight: 700, borderRadius: '6px', bgcolor: bgStatus, color: statusColor }} 
-                      />
+                      <Chip label={wh.warehouse_type?.replace(/_/g, ' ') || 'Warehouse'} size="small" sx={{ fontWeight: 700, borderRadius: '6px', bgcolor: '#EFF6FF', color: '#3B82F6' }} />
                     </Box>
-                    
-                    <Box sx={{ mb: 2 }}>
-                      <LinearProgress 
-                        variant="determinate" 
-                        value={wh.utilization} 
-                        sx={{ 
-                          height: 6, borderRadius: 3, bgcolor: 'rgba(0,0,0,0.05)',
-                          '& .MuiLinearProgress-bar': { bgcolor: statusColor }
-                        }} 
-                      />
-                    </Box>
-                    
                     <Grid container spacing={2}>
-                      <Grid size={3}>
+                      <Grid size={4}>
                         <Typography variant="caption" sx={{ color: '#8A7F75', display: 'block' }}>Capacity</Typography>
-                        <Typography sx={{ fontWeight: 700, fontSize: '0.85rem' }}>{wh.available} available</Typography>
-                        <Typography variant="caption" sx={{ color: '#8A7F75', display: 'block' }}>({wh.occupied} occupied)</Typography>
+                        <Typography sx={{ fontWeight: 700, fontSize: '0.85rem' }}>{wh.capacity || 'N/A'} m²</Typography>
                       </Grid>
-                      <Grid size={3}>
-                        <Typography variant="caption" sx={{ color: '#8A7F75', display: 'block' }}>Docks Available</Typography>
-                        <Typography sx={{ fontWeight: 700, fontSize: '0.85rem' }}>{wh.docks}</Typography>
+                      <Grid size={4}>
+                        <Typography variant="caption" sx={{ color: '#8A7F75', display: 'block' }}>Docks</Typography>
+                        <Typography sx={{ fontWeight: 700, fontSize: '0.85rem' }}>{wh.dock_count ?? 'N/A'}</Typography>
                       </Grid>
-                      <Grid size={3}>
-                        <Typography variant="caption" sx={{ color: '#8A7F75', display: 'block' }}>Expected Delay</Typography>
-                        <Typography sx={{ fontWeight: 700, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                          <AccessTime sx={{ fontSize: 14, color: statusColor }} /> {wh.delay}
-                        </Typography>
-                      </Grid>
-                      <Grid size={3}>
-                        <Typography variant="caption" sx={{ color: '#8A7F75', display: 'block' }}>Incoming Shipments</Typography>
-                        <Typography sx={{ fontWeight: 700, fontSize: '0.85rem' }}>{wh.incoming}</Typography>
+                      <Grid size={4}>
+                        <Typography variant="caption" sx={{ color: '#8A7F75', display: 'block' }}>Type</Typography>
+                        <Typography sx={{ fontWeight: 700, fontSize: '0.85rem' }}>{wh.warehouse_type?.replace(/_/g, ' ') || 'Standard'}</Typography>
                       </Grid>
                     </Grid>
                   </CardContent>

@@ -23,10 +23,8 @@ export default function AnalyticsPage() {
     { label: 'Dock Utilization', value: `${transit.docks?.utilization_pct ?? 0}%`, icon: <Timer />, color: '#8B5CF6', bg: '#F5F3FF' },
   ];
 
-  // Shipment volume chart (mock — last 6 months)
-  const volumeData = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'].map((m) => ({
-    month: m, shipments: Math.floor(Math.random() * 50) + 15,
-  }));
+  // Shipment volume chart (empty until historical data API is added)
+  const volumeData: any[] = [];
 
   // Status pie
   const statusData = [
@@ -69,15 +67,21 @@ export default function AnalyticsPage() {
             <CardContent>
               <Typography variant="subtitle1" sx={{ mb: 2 }}>Shipment Volume</Typography>
               <Box sx={{ height: 300 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={volumeData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="shipments" fill="#F97316" radius={[6, 6, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+                {volumeData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={volumeData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                      <XAxis dataKey="month" />
+                      <YAxis />
+                      <Tooltip />
+                      <Bar dataKey="shipments" fill="#F97316" radius={[6, 6, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                    <Typography variant="body2" sx={{ color: '#9CA3AF' }}>No historical volume data</Typography>
+                  </Box>
+                )}
               </Box>
             </CardContent>
           </Card>

@@ -7,7 +7,7 @@ export const authApi = {
   refreshToken: (refresh: string) =>
     client.post('/auth/token/refresh/', { refresh }),
 
-  getProfile: () => client.get('/auth/profile/'),
+  getProfile: () => client.get('/auth/me/'),
 };
 
 export const dashboardApi = {
@@ -39,7 +39,7 @@ export const shipmentsApi = {
 export const fleetApi = {
   listTrucks: (params?: Record<string, unknown>) => client.get('/trucks/', { params }),
   listDrivers: (params?: Record<string, unknown>) => client.get('/drivers/', { params }),
-  listWarehouses: () => client.get('/warehouses/'),
+  listWarehouses: () => client.get('/warehouses/global-registry/'),
   listDocks: () => client.get('/docks/'),
 };
 
@@ -61,11 +61,11 @@ export const optimizationApi = {
 };
 
 export const lotsApi = {
-  list: (params?: Record<string, unknown>) => client.get('/lots/', { params }),
-  get: (id: number) => client.get(`/lots/${id}/`),
-  create: (data: Record<string, unknown>) => client.post('/lots/', data),
-  update: (id: number, data: Record<string, unknown>) => client.patch(`/lots/${id}/`, data),
-  delete: (id: number) => client.delete(`/lots/${id}/`),
+  list: (params?: Record<string, unknown>) => client.get('/shipments/lots/', { params }),
+  get: (id: number) => client.get(`/shipments/lots/${id}/`),
+  create: (data: Record<string, unknown>) => client.post('/shipments/lots/', data),
+  update: (id: number, data: Record<string, unknown>) => client.patch(`/shipments/lots/${id}/`, data),
+  delete: (id: number) => client.delete(`/shipments/lots/${id}/`),
 };
 
 export const logisticsApi = {

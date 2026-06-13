@@ -1,21 +1,17 @@
 import React, { useState } from 'react';
 import {
   Box, Typography, Card, CardContent, Chip, Button,
-  TextField, MenuItem, IconButton, Tabs, Tab, Divider
+  TextField, MenuItem, IconButton, Tabs, Tab, Divider, CircularProgress
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import {
   CalendarMonth, ChevronLeft, ChevronRight,
-  LocalShipping, Storefront, Warehouse, EditCalendar, Visibility
+  LocalShipping, Storefront, Warehouse, EditCalendar, Visibility, ChecklistRtl
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
-const MOCK_DISPATCHES = [
-  { id: 'SH-202606-001', dest: 'Mumbai Central Hub', warehouse: 'WH-West-01', logistics: 'FastFreight Co', status: 'SCHEDULED', date: '2026-06-15' },
-  { id: 'SH-202606-002', dest: 'Delhi North Hub', warehouse: 'WH-North-02', logistics: 'ExpressRoads', status: 'IN_TRANSIT', date: '2026-06-13' },
-  { id: 'SH-202606-003', dest: 'Bangalore South Hub', warehouse: 'WH-South-01', logistics: 'SafeTrans', status: 'DRAFT', date: '2026-06-16' },
-  { id: 'SH-202606-004', dest: 'Chennai Hub', warehouse: 'WH-South-02', logistics: 'FastFreight Co', status: 'SCHEDULED', date: '2026-06-15' },
-];
+import { useEffect } from 'react';
+import { shipmentsApi } from '../api/endpoints';
 
 export default function DispatchCalendarPage() {
   const navigate = useNavigate();
@@ -23,9 +19,19 @@ export default function DispatchCalendarPage() {
   const [filterWh, setFilterWh] = useState('ALL');
   const [filterLogistics, setFilterLogistics] = useState('ALL');
 
-  const filtered = MOCK_DISPATCHES.filter(d => {
-    if (filterWh !== 'ALL' && d.warehouse !== filterWh) return false;
-    if (filterLogistics !== 'ALL' && d.logistics !== filterLogistics) return false;
+  const [dispatches, setDispatches] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    shipmentsApi.list()
+      .then(res => setDispatches(res.data.results || res.data || []))
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
+
+  const filtered = dispatches.filter(d => {
+    if (filterWh !== 'ALL' && d.warehouse_name !== filterWh) return false;
+    if (filterLogistics !== 'ALL' && d.assigned_logistics_name !== filterLogistics) return false;
     return true;
   });
 
@@ -81,12 +87,22 @@ export default function DispatchCalendarPage() {
       {/* Simplified Schedule View */}
       <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 700 }}>Upcoming Dispatches</Typography>
       <Grid container spacing={3}>
-        {filtered.map(dispatch => (
+        {loading ? (
+          <Grid size={{ xs: 12 }}>
+            <Box display="flex" justifyContent="center" p={5}><CircularProgress /></Box>
+          </Grid>
+        ) : filtered.length === 0 ? (
+          <Grid size={{ xs: 12 }}>
+            <Typography variant="body2" sx={{ py: 4, textAlign: 'center', color: '#8A7F75' }}>No dispatches found.</Typography>
+          </Grid>
+        ) : filtered.map(dispatch => (
           <Grid size={{ xs: 12, md: 6, lg: 4 }} key={dispatch.id}>
             <Card sx={{ borderLeft: '4px solid #F97316' }}>
               <CardContent sx={{ p: 2 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                  <Typography sx={{ fontWeight: 800, color: '#332922' }}>{dispatch.date}</Typography>
+                  <Typography sx={{ fontWeight: 800, color: '#332922' }}>
+                    {dispatch.expected_dispatch_time ? new Date(dispatch.expected_dispatch_time).toLocaleDateString() : 'Unscheduled'}
+                  </Typography>
                   <Chip 
                     label={dispatch.status} 
                     size="small" 
@@ -98,23 +114,23 @@ export default function DispatchCalendarPage() {
                   />
                 </Box>
                 
-                <Typography variant="body2" sx={{ fontWeight: 700, color: '#F97316', mb: 1 }}>{dispatch.id}</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 700, color: '#F97316', mb: 1 }}>{dispatch.shipment_number || `SH-${dispatch.id}`}</Typography>
                 
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5, color: '#8A7F75' }}>
                   <Warehouse sx={{ fontSize: 16 }} />
-                  <Typography variant="caption">{dispatch.dest} ({dispatch.warehouse})</Typography>
+                  <Typography variant="caption">{dispatch.warehouse_name || 'Unknown Warehouse'}</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2, color: '#8A7F75' }}>
                   <Storefront sx={{ fontSize: 16 }} />
-                  <Typography variant="caption">{dispatch.logistics}</Typography>
+                  <Typography variant="caption">{dispatch.assigned_logistics_name || 'No Logistics Partner'}</Typography>
                 </Box>
                 
                 <Box sx={{ display: 'flex', gap: 1 }}>
-                  <Button size="small" variant="outlined" startIcon={<Visibility />} onClick={() => navigate(`/shipments/${dispatch.id}`)} sx={{ flex: 1 }}>
+                  <Button size="small" variant="outlined" startIcon={<Visibility />} onClick={() => navigate(`/shipments/${dispatch.id}`)}>
                     View
                   </Button>
-                  <Button size="small" variant="outlined" startIcon={<EditCalendar />} color="secondary" sx={{ flex: 1 }}>
-                    Reschedule
+                  <Button size="small" variant="outlined" startIcon={<ChecklistRtl />} color="success" onClick={() => navigate(`/loading-checklist/${dispatch.id}`)}>
+                    Checklist
                   </Button>
                 </Box>
               </CardContent>
