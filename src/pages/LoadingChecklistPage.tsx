@@ -67,7 +67,7 @@ export default function LoadingChecklistPage() {
     setDispatching(true);
     try {
       await shipmentsApi.dispatch(Number(id));
-      alert('Shipment dispatched successfully!');
+      alert('Shipment marked ready for transit!');
       navigate(`/shipments/${id}`);
     } catch (e) {
       console.error(e);
@@ -209,7 +209,7 @@ export default function LoadingChecklistPage() {
                 : undefined,
             }}
           >
-            {dispatching ? 'Dispatching...' : 'Dispatch Shipment'}
+            {dispatching ? 'Processing...' : 'Mark Loading Complete'}
           </Button>
         </Grid>
       </Grid>

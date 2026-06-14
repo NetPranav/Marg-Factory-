@@ -27,12 +27,11 @@ export default function AnalyticsPage() {
   const volumeData: any[] = [];
 
   // Status pie
-  const statusData = [
-    { name: 'Completed', value: transit.performance?.completed ?? 0 },
+  const statusData = transit.shipments ? [
     { name: 'In Transit', value: transit.shipments?.in_transit ?? 0 },
-    { name: 'Dispatched', value: transit.shipments?.dispatched ?? 0 },
+    { name: 'Ready for Transit', value: transit.shipments?.ready_for_transit ?? 0 },
     { name: 'At Warehouse', value: transit.shipments?.at_warehouse ?? 0 },
-  ].filter(d => d.value > 0);
+  ].filter(d => d.value > 0) : [];
 
   return (
     <Box>

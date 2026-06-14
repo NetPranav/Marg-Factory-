@@ -16,7 +16,8 @@ export default function QuotationsPage() {
   const [rooms, setRooms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const loadRooms = () => {
+    setLoading(true);
     logisticsApi.listChatRooms()
       .then(res => {
         const data = res.data.results || res.data || [];
@@ -24,6 +25,10 @@ export default function QuotationsPage() {
       })
       .catch(console.error)
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    loadRooms();
   }, []);
 
   // Flatten all quotes from all chat rooms
@@ -77,6 +82,17 @@ export default function QuotationsPage() {
     } catch (e) {
       console.error(e);
       alert('Error accepting quote');
+    }
+  };
+
+  const handleReject = async (quoteId: number) => {
+    try {
+      const res = await logisticsApi.rejectQuote(quoteId);
+      alert(res.data.message || 'Quote rejected!');
+      loadRooms();
+    } catch (e) {
+      console.error(e);
+      alert('Error rejecting quote');
     }
   };
 
@@ -214,6 +230,7 @@ export default function QuotationsPage() {
                         <Button
                           variant="outlined"
                           color="error"
+                          onClick={() => handleReject(quote.id)}
                           sx={{ borderRadius: '10px', minWidth: 'auto', px: 2 }}
                         >
                           <Cancel />

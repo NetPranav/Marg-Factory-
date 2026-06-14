@@ -45,7 +45,7 @@ export default function ShipmentReadinessPage() {
           // Dummy logic for score based on status
           let score = 20;
           if (shipment.status === 'APPROVED' || shipment.status === 'READY') score = 60;
-          if (shipment.status === 'DISPATCHED' || shipment.status === 'IN_TRANSIT') score = 100;
+          if (shipment.status === 'READY_FOR_TRANSIT' || shipment.status === 'IN_TRANSIT') score = 100;
           
           const isReady = score === 100;
           const tasks = [

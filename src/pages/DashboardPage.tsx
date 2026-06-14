@@ -33,8 +33,8 @@ const QUICK_ACTIONS = [
 const WORKFLOW_STATUS = [
   { label: 'Draft Lots', count: 0, path: '/lots', bg: '#FFF7ED', color: '#EA580C', icon: <Assignment sx={{ fontSize: 20 }} /> },
   { label: 'Awaiting Warehouse', count: 0, path: '/pending-approvals', bg: '#FEF3C7', color: '#D97706', icon: <HourglassTop sx={{ fontSize: 20 }} /> },
-  { label: 'Awaiting Logistics', count: 0, path: '/quotations', bg: '#DBEAFE', color: '#2563EB', icon: <Storefront sx={{ fontSize: 20 }} /> },
-  { label: 'Ready For Dispatch', count: 0, path: '/shipments', bg: '#F0FDF4', color: '#16A34A', icon: <FactCheck sx={{ fontSize: 20 }} /> },
+  { label: 'Awaiting Driver Arrival', count: 0, path: '/shipments', bg: '#DBEAFE', color: '#2563EB', icon: <Storefront sx={{ fontSize: 20 }} /> },
+  { label: 'Awaiting Cargo Acceptance', count: 0, path: '/shipments', bg: '#F0FDF4', color: '#16A34A', icon: <FactCheck sx={{ fontSize: 20 }} /> },
   { label: 'Active Shipments', count: 0, path: '/shipments', bg: '#EFF6FF', color: '#3B82F6', icon: <LocalShipping sx={{ fontSize: 20 }} /> },
   { label: 'Completed', count: 0, path: '/completed-shipments', bg: '#D1FAE5', color: '#059669', icon: <DoneAll sx={{ fontSize: 20 }} /> },
 ];
@@ -65,10 +65,9 @@ export default function DashboardPage() {
   const transit = transitData?.data?.data ?? {};
   const recentShipments = shipmentsData?.data?.results ?? [];
 
-  // Pie data from transit
   const pieData = transit.shipments ? [
     { name: 'In Transit', value: transit.shipments?.in_transit ?? 0 },
-    { name: 'Dispatched', value: transit.shipments?.dispatched ?? 0 },
+    { name: 'Ready for Transit', value: transit.shipments?.ready_for_transit ?? 0 },
     { name: 'At Warehouse', value: transit.shipments?.at_warehouse ?? 0 },
   ].filter(d => d.value > 0) : [];
 
@@ -273,7 +272,7 @@ export default function DashboardPage() {
                 <Button size="small" variant="contained" color="primary" sx={{ borderRadius: '8px', px: 2 }} onClick={() => navigate('/shipments')}>View All →</Button>
               </Box>
               {recentShipments.map((s: any) => {
-                const sc = STATUS_COLORS[s.status] ?? STATUS_COLORS.CREATED;
+                const sc = STATUS_COLORS[s.status] ?? STATUS_COLORS.DRAFT;
                 return (
                   <Box key={s.id} onClick={() => navigate(`/shipments/${s.id}`)}
                     sx={{

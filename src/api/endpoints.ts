@@ -5,7 +5,7 @@ export const authApi = {
     client.post('/auth/login/', { email, password }),
 
   refreshToken: (refresh: string) =>
-    client.post('/auth/token/refresh/', { refresh }),
+    client.post('/auth/refresh/', { refresh }),
 
   getProfile: () => client.get('/auth/me/'),
 };
@@ -74,5 +74,7 @@ export const logisticsApi = {
   getChatRoom: (id: number) => client.get(`/logistics/chatrooms/${id}/`),
   createChatRoom: (data: Record<string, unknown>) => client.post('/logistics/chatrooms/', data),
   sendMessage: (data: Record<string, unknown>) => client.post('/logistics/messages/', data),
+  markReadChat: (id: number) => client.post(`/logistics/chatrooms/${id}/mark-read/`),
   acceptQuote: (quoteId: number) => client.post(`/logistics/quotes/${quoteId}/accept/`),
+  rejectQuote: (quoteId: number) => client.post(`/logistics/quotes/${quoteId}/reject/`),
 };

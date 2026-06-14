@@ -73,7 +73,7 @@ export default function HistoricalShipmentsPage() {
           >
             <MenuItem value="">All Statuses</MenuItem>
             <MenuItem value="CREATED">Created</MenuItem>
-            <MenuItem value="DISPATCHED">Dispatched</MenuItem>
+            <MenuItem value="READY_FOR_TRANSIT">Ready For Transit</MenuItem>
             <MenuItem value="IN_TRANSIT">In Transit</MenuItem>
             <MenuItem value="DELIVERED">Delivered</MenuItem>
             <MenuItem value="CANCELLED">Cancelled</MenuItem>

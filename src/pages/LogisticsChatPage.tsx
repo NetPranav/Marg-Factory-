@@ -16,7 +16,10 @@ export default function LogisticsChatPage() {
 
   const fetchRoom = () => {
     if (!id) return;
-    logisticsApi.getChatRoom(Number(id)).then(res => setRoom(res.data)).catch(console.error);
+    logisticsApi.getChatRoom(Number(id)).then(res => {
+      setRoom(res.data);
+      logisticsApi.markReadChat(Number(id)).catch(() => {});
+    }).catch(console.error);
   };
 
   useEffect(() => {

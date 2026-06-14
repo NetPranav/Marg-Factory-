@@ -82,7 +82,7 @@ export default function ShipmentsPage() {
             </TableHead>
             <TableBody>
               {shipments.map((s: any) => {
-                const sc = STATUS_COLORS[s.status] ?? STATUS_COLORS.CREATED;
+                const sc = STATUS_COLORS[s.status] ?? STATUS_COLORS.DRAFT;
                 const pc = PRIORITY_COLORS[s.priority] ?? PRIORITY_COLORS.MEDIUM;
                 return (
                   <TableRow key={s.id} hover sx={{ cursor: 'pointer' }} onClick={() => navigate(`/shipments/${s.id}`)}>

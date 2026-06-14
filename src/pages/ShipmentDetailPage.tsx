@@ -79,7 +79,7 @@ export default function ShipmentDetailPage() {
   if (isLoading) return <Box sx={{ textAlign: 'center', py: 8 }}><CircularProgress /></Box>;
   if (!s) return <Alert severity="error">Shipment not found</Alert>;
 
-  const sc = STATUS_COLORS[s.status] ?? STATUS_COLORS.CREATED;
+  const sc = STATUS_COLORS[s.status] ?? STATUS_COLORS.DRAFT;
   const pc = PRIORITY_COLORS[s.priority] ?? PRIORITY_COLORS.MEDIUM;
 
   return (
@@ -97,10 +97,9 @@ export default function ShipmentDetailPage() {
         <Box sx={{ display: 'flex', gap: 1 }}>
           {!s.truck_registration && <Button variant="outlined" startIcon={<DirectionsCar />} onClick={() => setTruckDialog(true)}>Assign Truck</Button>}
           {s.truck_registration && !s.driver_name && <Button variant="outlined" startIcon={<Person />} onClick={() => setDriverDialog(true)}>Assign Driver</Button>}
-          {s.status === 'READY_FOR_DISPATCH' && (
-            <Button variant="contained" startIcon={<PlayArrow />} onClick={() => dispatchMutation.mutate()}
-              disabled={dispatchMutation.isPending}>
-              Dispatch
+          {s.status === 'LOADING_IN_PROGRESS' && (
+            <Button variant="contained" startIcon={<PlayArrow />} onClick={() => window.location.href = `/loading-checklist/${s.id}`}>
+              Complete Loading
             </Button>
           )}
         </Box>
